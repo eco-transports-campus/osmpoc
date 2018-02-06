@@ -1,6 +1,23 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+var _mapper = require('./mapper.js');
+
+window.onload = function () {
+
+  var map = new _mapper.Mapper('map');
+
+  console.log(_mapper.MapConst);
+};
+
+},{"./mapper.js":2}],2:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Mapper = exports.MapConst = undefined;
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 var _leaflet = require('leaflet');
@@ -11,31 +28,60 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var Map = function () {
-  function Map(id) {
-    _classCallCheck(this, Map);
+var MapConst = exports.MapConst = {
 
-    this._id = id;
-    this._map = _leaflet2.default.map(id).setView([51.505, -0.09], 13);
-
-    _leaflet2.default.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this._map);
-
-    _leaflet2.default.marker([51.5, -0.09]).addTo(this._map).bindPopup('A pretty CSS3 popup.<br> Easily customizable.').openPopup();
+  TILES: {
+    ORIGIN: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    DEFAULT: 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
   }
 
-  _createClass(Map, [{
-    key: 'elementId',
+};
+
+var Mapper = exports.Mapper = function () {
+  function Mapper(id, props) {
+    _classCallCheck(this, Mapper);
+
+    // Shared Constants
+
+    // Save DOM Element id
+    this._id = id;
+
+    // Create map
+    if (props) {
+      this._map = _leaflet2.default.map(this._id, props);
+    } else {
+      this._map = _leaflet2.default.map(this._id, {
+        center: [48.85, 2.35],
+        zoom: 12,
+        zoomControl: false
+      });
+    }
+
+    // Set default tile
+    this.tile = MapConst.TILES.DEFAULT;
+  }
+
+  _createClass(Mapper, [{
+    key: 'mapId',
     get: function get() {
       return this._id;
     }
+  }, {
+    key: 'map',
+    get: function get() {
+      return this._map;
+    }
+  }, {
+    key: 'tile',
+    set: function set(addr) {
+      L.tileLayer(addr).addTo(this._map);
+    }
   }]);
 
-  return Map;
+  return Mapper;
 }();
 
-},{"leaflet":2}],2:[function(require,module,exports){
+},{"leaflet":3}],3:[function(require,module,exports){
 /* @preserve
  * Leaflet 1.3.1, a JS library for interactive maps. http://leafletjs.com
  * (c) 2010-2017 Vladimir Agafonkin, (c) 2010-2011 CloudMade

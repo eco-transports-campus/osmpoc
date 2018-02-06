@@ -23,7 +23,7 @@ fs
   // Retrieve all JS source file
   .readdirSync(Config.JS_IN)
   .forEach(function(file) {
-    let inPath = Config.JS_IN + '/' + file,
+    var inPath = Config.JS_IN + '/' + file,
         outPath = Config.JS_OUT + '/' + file;
 
     console.log('\tBuild: ' + inPath + ' -> ' + outPath);
@@ -33,5 +33,6 @@ fs
       .transform("babelify", { presets: ["env"] })
       .bundle()
       .pipe(fs.createWriteStream(outPath));
-
   });
+  
+console.log('\tFinished');
