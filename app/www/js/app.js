@@ -5,9 +5,52 @@ var _mapper = require('./mapper.js');
 
 window.onload = function () {
 
+  // Initialize Map
   var map = new _mapper.Mapper('map');
 
-  console.log(_mapper.MapConst);
+  // Test : Current Location
+  document.getElementById('btn_CurrentLocation').addEventListener('click', function () {
+    map.getCurrentLocation(
+
+    // Location find
+    function (position) {
+      console.log(position);
+    },
+
+    // Location error
+    function (error) {
+      console.log(error);
+    });
+  });
+
+  // Test : Watch Location
+  var watchBtn = document.getElementById('btn_WatchLocation');
+
+  watchBtn.addEventListener('click', function () {
+    if (map.isWatching()) {
+      // Stop Watcher
+      map.clearWatcher();
+      watchBtn.innerText = 'Watch User Location';
+    } else {
+      watchBtn.innerText = 'Stop Watching';
+
+      map.watchLocation(
+      // Location find
+      function (position) {
+        //console.log(position);
+      },
+
+      // Location error
+      function (error) {
+        console.log(error);
+      });
+    }
+  });
+
+  // Clear All Layers
+  document.getElementById('btn_ClearLayers').addEventListener('click', function () {
+    while (map.removeLastLayers()) {}
+  });
 };
 
 },{"./mapper.js":2}],2:[function(require,module,exports){
@@ -41,7 +84,8 @@ var Mapper = exports.Mapper = function () {
   function Mapper(id, props) {
     _classCallCheck(this, Mapper);
 
-    // Shared Constants
+    this._layers = [];
+    this._watcherId = undefined;
 
     // Save DOM Element id
     this._id = id;
@@ -62,6 +106,103 @@ var Mapper = exports.Mapper = function () {
   }
 
   _createClass(Mapper, [{
+    key: 'addLayersOnMap',
+    value: function addLayersOnMap(layers) {
+      this._layers.push(layers);
+    }
+  }, {
+    key: 'removeLastLayers',
+    value: function removeLastLayers() {
+      if (this._layers.length > 1) {
+        var layers = this._layers.pop();
+
+        layers.forEach(function (layer) {
+          layer.remove();
+        });
+
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: 'getCurrentLocation',
+    value: function getCurrentLocation(fnSuccess, fnError) {
+      var _this = this;
+
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(function (pos) {
+          if (fnSuccess) {
+            fnSuccess(pos);
+          }
+
+          _this.removeLastLayers();
+          _this._map.flyTo(_leaflet2.default.latLng(pos.coords.latitude, pos.coords.longitude), 12);
+          _this.addLayersOnMap([_leaflet2.default.circle([pos.coords.latitude, pos.coords.longitude], { radius: pos.coords.accuracy }).addTo(_this._map), _leaflet2.default.marker([pos.coords.latitude, pos.coords.longitude]).addTo(_this._map)]);
+        }, function (error) {
+          if (fnError) {
+            fnError(error);
+          }
+        });
+      } else {
+        console.error('Geolocation is not supported');
+
+        if (fnError) {
+          fnError({
+            code: 0,
+            message: 'Geolocation is not supported'
+          });
+        }
+      }
+    }
+  }, {
+    key: 'watchLocation',
+    value: function watchLocation(fnSuccess, fnError) {
+      var _this2 = this;
+
+      if ("geolocation" in navigator) {
+        this._watcherId = navigator.geolocation.watchPosition(function (pos) {
+          if (fnSuccess) {
+            fnSuccess(pos);
+          }
+
+          _this2.removeLastLayers();
+          _this2._map.flyTo(_leaflet2.default.latLng(pos.coords.latitude, pos.coords.longitude), 12);
+          _this2.addLayersOnMap([_leaflet2.default.circle([pos.coords.latitude, pos.coords.longitude], { radius: pos.coords.accuracy }).addTo(_this2._map), _leaflet2.default.marker([pos.coords.latitude, pos.coords.longitude]).addTo(_this2._map)]);
+        }, function (err) {
+          if (fnError) {
+            fnError(err);
+          }
+        }, {
+          enableHighAccuracy: true,
+          timeout: Infinity,
+          maximumAge: 0
+        });
+      } else {
+        console.error('Geolocation is not supported');
+
+        if (fnError) {
+          fnError({
+            code: 0,
+            message: 'Geolocation is not supported'
+          });
+        }
+      }
+    }
+  }, {
+    key: 'clearWatcher',
+    value: function clearWatcher() {
+      if (this._watcherId !== undefined) {
+        navigator.geolocation.clearWatch(this._watcherId);
+        this._watcherId = undefined;
+      }
+    }
+  }, {
+    key: 'isWatching',
+    value: function isWatching() {
+      return this._watcherId !== undefined ? true : false;
+    }
+  }, {
     key: 'mapId',
     get: function get() {
       return this._id;
@@ -74,7 +215,7 @@ var Mapper = exports.Mapper = function () {
   }, {
     key: 'tile',
     set: function set(addr) {
-      L.tileLayer(addr).addTo(this._map);
+      this._layers.push([_leaflet2.default.tileLayer(addr).addTo(this._map)]);
     }
   }]);
 
