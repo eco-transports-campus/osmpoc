@@ -1,25 +1,33 @@
-import { Mapper, MapConst } from './mapper.js';
+import { Mapper, Geolocater, MapConst } from './mapper.js';
 
 
 window.onload = function() {
-  
+
   // Initialize Map
   let map = new Mapper('map');
+
+  console.log(MapConst);
+
+
+  function showLocationMarker(pos) {
+    map.removeLastLayers();
+    map.setView({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 });
+    map.addApproximatedMarker({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+  }
+
 
   // Test : Current Location
   document.getElementById('btn_CurrentLocation')
     .addEventListener('click', () => {
-        map.getCurrentLocation(
-          
-          // Location find
+        Geolocater.getCurrentLocation(
+          // User Position find
           (position) => {
-              console.log(position);
-            },
-
-          // Location error
-          (error) => {
-              console.log(error);
-            });
+            showLocationMarker(position);
+          },
+          // User Position error
+          (err) => {
+            console.error(err.message);
+          });
       });
 
 
@@ -28,16 +36,23 @@ window.onload = function() {
 
   watchBtn
     .addEventListener('click', () => {
-      if (map.isWatching()) {
+      if (Geolocater.isWatching()) {
         // Stop Watcher
-        map.clearWatcher();
+        Geolocater.clearWatcher();
         watchBtn.innerText = 'Watch User Location';
       } else {
         // Start Watcher
-        map.watchLocation();
         watchBtn.innerText = 'Stop Watching';
+        Geolocater.watchLocation(
+          (position) => {
+            showLocationMarker(position)
+          },
+          (err) => {
+            console.error(err.message);
+          });
       }
     });
+
 
   // Clear All Layers
   document

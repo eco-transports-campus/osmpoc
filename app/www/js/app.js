@@ -8,18 +8,24 @@ window.onload = function () {
   // Initialize Map
   var map = new _mapper.Mapper('map');
 
+  console.log(_mapper.MapConst);
+
+  function showLocationMarker(pos) {
+    map.removeLastLayers();
+    map.setView({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 });
+    map.addApproximatedMarker({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+  }
+
   // Test : Current Location
   document.getElementById('btn_CurrentLocation').addEventListener('click', function () {
-    map.getCurrentLocation(
-
-    // Location find
+    _mapper.Geolocater.getCurrentLocation(
+    // User Position find
     function (position) {
-      console.log(position);
+      showLocationMarker(position);
     },
-
-    // Location error
-    function (error) {
-      console.log(error);
+    // User Position error
+    function (err) {
+      console.error(err.message);
     });
   });
 
@@ -27,22 +33,17 @@ window.onload = function () {
   var watchBtn = document.getElementById('btn_WatchLocation');
 
   watchBtn.addEventListener('click', function () {
-    if (map.isWatching()) {
+    if (_mapper.Geolocater.isWatching()) {
       // Stop Watcher
-      map.clearWatcher();
+      _mapper.Geolocater.clearWatcher();
       watchBtn.innerText = 'Watch User Location';
     } else {
+      // Start Watcher
       watchBtn.innerText = 'Stop Watching';
-
-      map.watchLocation(
-      // Location find
-      function (position) {
-        //console.log(position);
-      },
-
-      // Location error
-      function (error) {
-        console.log(error);
+      _mapper.Geolocater.watchLocation(function (position) {
+        showLocationMarker(position);
+      }, function (err) {
+        console.error(err.message);
       });
     }
   });
@@ -59,7 +60,7 @@ window.onload = function () {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Mapper = exports.MapConst = undefined;
+exports.Mapper = exports.Geolocater = exports.Geocoder = exports.MapConst = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
@@ -80,7 +81,112 @@ var MapConst = exports.MapConst = {
 
 };
 
+/** ConstClass to simplify the geocoding process */
+var Geocoder = exports.Geocoder = {
+
+  /**
+   *  TODO Find the position from address
+   *  @param {string} addr - Address to translate 
+   */
+  getPosition: function getPosition(addr) {},
+
+  /**
+   *  TODO Find address from a specific position
+   */
+  getAddress: function getAddress() {}
+
+};
+
+/** ConstClass to simplify the geolocation process */
+var Geolocater = exports.Geolocater = {
+
+  _watcherId: undefined,
+
+  /**
+   *  Retrieve the current position of the user
+   *  @param {Function} fnSuccess - Success callback
+   *  @param {Function} fnError - Error callback
+   */
+  getCurrentLocation: function getCurrentLocation(fnSuccess, fnError) {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        if (fnSuccess) {
+          fnSuccess(pos);
+        }
+      }, function (error) {
+        if (fnError) {
+          fnError(error);
+        }
+      });
+    } else {
+      if (fnError) {
+        fnError({
+          code: 0,
+          message: 'Geolocation is not supported'
+        });
+      }
+    }
+  },
+
+  /**
+   *  Follow th position of the user
+   *  @param {Function} fnSuccess - Success callback
+   *  @param {Function} fnError - Error callback
+   */
+  watchLocation: function watchLocation(fnSuccess, fnError) {
+    if ("geolocation" in navigator) {
+      Geolocater._watcherId = navigator.geolocation.watchPosition(function (pos) {
+        if (fnSuccess) {
+          fnSuccess(pos);
+        }
+      }, function (err) {
+        if (fnError) {
+          fnError(err);
+        }
+      }, {
+        enableHighAccuracy: true,
+        timeout: Infinity,
+        maximumAge: 0
+      });
+    } else {
+      if (fnError) {
+        fnError({
+          code: 0,
+          message: 'Geolocation is not supported'
+        });
+      }
+    }
+  },
+
+  /**
+   *  Stop watcher
+   */
+  clearWatcher: function clearWatcher() {
+    if (Geolocater._watcherId !== undefined) {
+      navigator.geolocation.clearWatch(Geolocater._watcherId);
+      Geolocater._watcherId = undefined;
+    }
+  },
+
+  /**
+   *  Verify if a watcher is running
+   *  @return {bool} True if is running
+   */
+  isWatching: function isWatching() {
+    return Geolocater._watcherId !== undefined ? true : false;
+  }
+
+};
+
+/** Class to manipulate OpenStreetMap implementation */
+
 var Mapper = exports.Mapper = function () {
+
+  /**
+   *  Initialize the map
+   *  @param {string} id - Identifier of DOM Element
+   *  @param {Map options} props - Options Leaflet Map constructor
+   */
   function Mapper(id, props) {
     _classCallCheck(this, Mapper);
 
@@ -105,11 +211,39 @@ var Mapper = exports.Mapper = function () {
     this.tile = MapConst.TILES.DEFAULT;
   }
 
+  /**
+   *  Retrieve the Leaflet map
+   *  @return {Map} Leaflet Map
+   */
+
+
   _createClass(Mapper, [{
+    key: 'setView',
+
+
+    /**
+     *  Update the view center
+     *  @param {Object} view - Definition of the new view (attrs: lat, lng, zoom)
+     */
+    value: function setView(view) {
+      this._map.flyTo(_leaflet2.default.latLng(view.lat, view.lng), view.zoom);
+    }
+
+    /**
+     *  Add group of layers to the map
+     *  @param {Array} layers - Array of Leaflet layer
+     */
+
+  }, {
     key: 'addLayersOnMap',
     value: function addLayersOnMap(layers) {
       this._layers.push(layers);
     }
+
+    /**
+     *  Remove the last group of layers
+     */
+
   }, {
     key: 'removeLastLayers',
     value: function removeLastLayers() {
@@ -125,93 +259,39 @@ var Mapper = exports.Mapper = function () {
 
       return false;
     }
+
+    /**
+     *  Add a new marker with accuracy
+     *  @param {Object} marker - Marker definition: lat, lng, accuracy
+     */
+
   }, {
-    key: 'getCurrentLocation',
-    value: function getCurrentLocation(fnSuccess, fnError) {
-      var _this = this;
-
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function (pos) {
-          if (fnSuccess) {
-            fnSuccess(pos);
-          }
-
-          _this.removeLastLayers();
-          _this._map.flyTo(_leaflet2.default.latLng(pos.coords.latitude, pos.coords.longitude), 12);
-          _this.addLayersOnMap([_leaflet2.default.circle([pos.coords.latitude, pos.coords.longitude], { radius: pos.coords.accuracy }).addTo(_this._map), _leaflet2.default.marker([pos.coords.latitude, pos.coords.longitude]).addTo(_this._map)]);
-        }, function (error) {
-          if (fnError) {
-            fnError(error);
-          }
-        });
-      } else {
-        console.error('Geolocation is not supported');
-
-        if (fnError) {
-          fnError({
-            code: 0,
-            message: 'Geolocation is not supported'
-          });
-        }
-      }
+    key: 'addApproximatedMarker',
+    value: function addApproximatedMarker(marker) {
+      this.addLayersOnMap([_leaflet2.default.circle([marker.lat, marker.lng], { radius: marker.accuracy }).addTo(this._map), _leaflet2.default.marker([marker.lat, marker.lng]).addTo(this._map)]);
     }
-  }, {
-    key: 'watchLocation',
-    value: function watchLocation(fnSuccess, fnError) {
-      var _this2 = this;
 
-      if ("geolocation" in navigator) {
-        this._watcherId = navigator.geolocation.watchPosition(function (pos) {
-          if (fnSuccess) {
-            fnSuccess(pos);
-          }
+    /**
+     *  Add a simple marker to the map
+     *  @param {Object} marker - Marker definition: lat, lng
+     */
 
-          _this2.removeLastLayers();
-          _this2._map.flyTo(_leaflet2.default.latLng(pos.coords.latitude, pos.coords.longitude), 12);
-          _this2.addLayersOnMap([_leaflet2.default.circle([pos.coords.latitude, pos.coords.longitude], { radius: pos.coords.accuracy }).addTo(_this2._map), _leaflet2.default.marker([pos.coords.latitude, pos.coords.longitude]).addTo(_this2._map)]);
-        }, function (err) {
-          if (fnError) {
-            fnError(err);
-          }
-        }, {
-          enableHighAccuracy: true,
-          timeout: Infinity,
-          maximumAge: 0
-        });
-      } else {
-        console.error('Geolocation is not supported');
-
-        if (fnError) {
-          fnError({
-            code: 0,
-            message: 'Geolocation is not supported'
-          });
-        }
-      }
-    }
   }, {
-    key: 'clearWatcher',
-    value: function clearWatcher() {
-      if (this._watcherId !== undefined) {
-        navigator.geolocation.clearWatch(this._watcherId);
-        this._watcherId = undefined;
-      }
-    }
-  }, {
-    key: 'isWatching',
-    value: function isWatching() {
-      return this._watcherId !== undefined ? true : false;
-    }
-  }, {
-    key: 'mapId',
-    get: function get() {
-      return this._id;
+    key: 'addMarker',
+    value: function addMarker(marker) {
+      this.addLayersOnMap([_leaflet2.default.marker([marker.lat, marker.lng]).addTo(this._map)]);
     }
   }, {
     key: 'map',
     get: function get() {
       return this._map;
     }
+
+    /**
+     *  Change the tile engine
+     *  @param {string} addr - Title address
+     */
+
   }, {
     key: 'tile',
     set: function set(addr) {
