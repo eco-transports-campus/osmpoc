@@ -1,48 +1,290 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-'use strict';
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mapper_js__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__geolocater_js__ = __webpack_require__(3);
 
-var _leaflet = require('leaflet');
 
-var _leaflet2 = _interopRequireDefault(_leaflet);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+// When page is loaded
+window.addEventListener('load', () => {
 
-var Map = function () {
-  function Map(id) {
-    _classCallCheck(this, Map);
+  // Initialize Map
+  let map = new __WEBPACK_IMPORTED_MODULE_0__mapper_js__["a" /* Mapper */]('map');
 
-    this._id = id;
-    this._map = _leaflet2.default.map(id).setView([51.505, -0.09], 13);
 
-    _leaflet2.default.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this._map);
-
-    _leaflet2.default.marker([51.5, -0.09]).addTo(this._map).bindPopup('A pretty CSS3 popup.<br> Easily customizable.').openPopup();
+  // Function to show a location marker
+  function showLocationMarker(pos) {
+    map.removeLastLayers();
+    map.setView({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 });
+    map.addApproximatedMarker({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
   }
 
-  _createClass(Map, [{
-    key: 'elementId',
-    get: function get() {
-      return this._id;
+
+  // Button Test : Current Location
+  document.getElementById('btn_CurrentLocation')
+    .addEventListener('click', () => {
+        __WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].getCurrentLocation(
+          // User Position find
+          (position) => {
+            showLocationMarker(position);
+          },
+          // User Position error
+          (err) => {
+            console.error(err.message);
+          });
+      });
+
+
+  // Button Test : Watch Location
+  let watchBtn = document.getElementById('btn_WatchLocation');
+
+  watchBtn
+    .addEventListener('click', () => {
+      if (__WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].isWatching()) {
+        // Stop Watcher
+        __WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].clearWatcher();
+        watchBtn.innerText = 'Watch User Location';
+      } else {
+        // Start Watcher
+        watchBtn.innerText = 'Stop Watching';
+        __WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].watchLocation(
+          (position) => {
+            showLocationMarker(position)
+          },
+          (err) => {
+            console.error(err.message);
+          });
+      }
+    });
+
+
+  // Clear All Layers
+  document
+    .getElementById('btn_ClearLayers')
+    .addEventListener('click', () => {
+      while (map.removeLastLayers()) {}
+    });
+
+});
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_leaflet__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_leaflet___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_leaflet__);
+
+
+
+const MapConst = {
+
+  TILES: {
+      ORIGIN: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      DEFAULT: 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
     }
-  }]);
 
-  return Map;
-}();
+};
+/* unused harmony export MapConst */
 
-},{"leaflet":2}],2:[function(require,module,exports){
+
+
+/** Class to manipulate OpenStreetMap implementation */
+class Mapper {
+
+  /**
+   *  Initialize the map
+   *  @param {string} id - Identifier of DOM Element
+   *  @param {Map options} props - Options Leaflet Map constructor
+   */
+  constructor(id, props) {
+    this._layers = [];
+    this._watcherId = undefined;
+
+    // Save DOM Element id
+    this._id = id;
+
+    // Create map
+    if (props) {
+      this._map = __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.map(this._id, props);
+    } else {
+      this._map = __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.map(this._id, {
+          center: [48.85, 2.35],
+          zoom: 12,
+          zoomControl: false
+        });
+    }
+
+    // Set default tile
+    this.tile = MapConst.TILES.DEFAULT;
+  }
+
+  /**
+   *  Retrieve the Leaflet map
+   *  @return {Map} Leaflet Map
+   */
+  get map() {
+    return this._map;
+  }
+
+  /**
+   *  Change the tile engine
+   *  @param {string} addr - Title address
+   */
+  set tile(addr) {
+    this._layers.push([ __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.tileLayer(addr).addTo(this._map) ]);
+  }
+
+  /**
+   *  Update the view center
+   *  @param {Object} view - Definition of the new view (attrs: lat, lng, zoom)
+   */
+  setView(view) {
+    this._map.flyTo(
+      __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.latLng(
+        view.lat,
+        view.lng),
+      view.zoom);
+  }
+
+  /**
+   *  Add group of layers to the map
+   *  @param {Array} layers - Array of Leaflet layer
+   */
+  addLayersOnMap(layers) {
+    this._layers.push(layers);
+  }
+
+  /**
+   *  Remove the last group of layers
+   */
+  removeLastLayers() {
+    if (this._layers.length > 1) {
+      let layers = this._layers.pop();
+      
+      layers.forEach((layer) => {
+          layer.remove();
+        });
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   *  Add a new marker with accuracy
+   *  @param {Object} marker - Marker definition: lat, lng, accuracy
+   */
+  addApproximatedMarker(marker) {
+    this.addLayersOnMap([
+        __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
+          .circle([ marker.lat, marker.lng ], { radius: marker.accuracy })
+          .addTo(this._map),
+        __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
+          .marker([ marker.lat, marker.lng ])
+          .addTo(this._map)                
+      ]);
+  }
+
+  /**
+   *  Add a simple marker to the map
+   *  @param {Object} marker - Marker definition: lat, lng
+   */
+  addMarker(marker) {
+    this.addLayersOnMap([
+        __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
+          .marker([ marker.lat, marker.lng ])
+          .addTo(this._map)                
+      ]);
+  }
+
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Mapper;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
 /* @preserve
  * Leaflet 1.3.1, a JS library for interactive maps. http://leafletjs.com
  * (c) 2010-2017 Vladimir Agafonkin, (c) 2010-2011 CloudMade
  */
 
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	 true ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
 	(factory((global.L = {})));
 }(this, (function (exports) { 'use strict';
@@ -13837,6 +14079,103 @@ exports.Map = Map;
 exports.map = createMap;
 
 })));
+//# sourceMappingURL=leaflet-src.js.map
 
 
-},{}]},{},[1]);
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/** Class to simplify the geolocation process */
+class Geolocater {
+
+  constructor() {
+    this._watcherId = undefined;
+  }
+
+  /**
+   *  Retrieve the current position of the user
+   *  @param {Function} fnSuccess - Success callback
+   *  @param {Function} fnError - Error callback
+   */
+  static getCurrentLocation(fnSuccess, fnError) {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (fnSuccess) {
+            fnSuccess(pos);
+          }
+        },
+        (error) => {
+          if (fnError) {
+            fnError(error);
+          }
+        });
+    } else {
+      if (fnError) {
+        fnError({
+            code: 0,
+            message: 'Geolocation is not supported'
+          });
+      }
+    }
+  }
+
+  /**
+   *  Follow th position of the user
+   *  @param {Function} fnSuccess - Success callback
+   *  @param {Function} fnError - Error callback
+   */
+  static watchLocation(fnSuccess, fnError) {
+    if ("geolocation" in navigator) {
+      this._watcherId = navigator.geolocation.watchPosition(
+        (pos) => {
+          if (fnSuccess) {
+            fnSuccess(pos);
+          }
+        },
+        (err) => {
+          if (fnError) {
+            fnError(err);
+          }
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: Infinity,
+            maximumAge: 0
+        });
+    } else {
+      if (fnError) {
+        fnError({
+            code: 0,
+            message: 'Geolocation is not supported'
+          });
+      }
+    }
+  }
+
+  /**
+   *  Stop watcher
+   */
+  static clearWatcher() {
+    if (this._watcherId !== undefined) {
+      navigator.geolocation.clearWatch(this._watcherId);
+      this._watcherId = undefined;
+    }
+  }
+
+  /**
+   *  Verify if a watcher is running
+   *  @return {bool} True if is running
+   */
+  static isWatching() {
+    return this._watcherId !== undefined ? true : false;
+  }
+
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Geolocater;
+
+
+/***/ })
+/******/ ]);

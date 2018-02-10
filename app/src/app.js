@@ -1,14 +1,15 @@
-import { Mapper, Geolocater, MapConst } from './mapper.js';
+import { Mapper } from './mapper.js';
+import Geolocater from './geolocater.js';
 
 
-window.onload = function() {
+// When page is loaded
+window.addEventListener('load', () => {
 
   // Initialize Map
   let map = new Mapper('map');
 
-  console.log(MapConst);
 
-
+  // Function to show a location marker
   function showLocationMarker(pos) {
     map.removeLastLayers();
     map.setView({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 });
@@ -16,7 +17,7 @@ window.onload = function() {
   }
 
 
-  // Test : Current Location
+  // Button Test : Current Location
   document.getElementById('btn_CurrentLocation')
     .addEventListener('click', () => {
         Geolocater.getCurrentLocation(
@@ -31,7 +32,7 @@ window.onload = function() {
       });
 
 
-  // Test : Watch Location
+  // Button Test : Watch Location
   let watchBtn = document.getElementById('btn_WatchLocation');
 
   watchBtn
@@ -61,4 +62,4 @@ window.onload = function() {
       while (map.removeLastLayers()) {}
     });
 
-}
+});
