@@ -71,6 +71,8 @@
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__mapper_js__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__geolocater_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__geocoder_js__ = __webpack_require__(4);
+
 
 
 
@@ -82,11 +84,61 @@ window.addEventListener('load', () => {
   let map = new __WEBPACK_IMPORTED_MODULE_0__mapper_js__["a" /* Mapper */]('map');
 
 
-  // Function to show a location marker
-  function showLocationMarker(pos) {
+
+  function showMarker(m) {
+    console.log(m)
     map.removeLastLayers();
-    map.setView({ lat: pos.coords.latitude, lng: pos.coords.longitude, zoom: 12 });
-    map.addApproximatedMarker({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+    map.setView({ lat: m.latitude, lng: m.longitude, zoom: 12 });
+    map.addMarker({ lat: m.latitude, lng: m.longitude});
+  }
+
+  // Function to find the position of an address
+  function findPositionOfAddress(addr) {
+    __WEBPACK_IMPORTED_MODULE_2__geocoder_js__["a" /* default */].getPosition(addr, (data) => {
+      console.log(data);
+      map.removeLastLayers();
+      data.reverse().forEach((location) => {
+        map.setView({ lat: location.lat, lng: location.lon, zoom: 12 });
+        map.addMarker({ lat: location.lat, lng: location.lon});
+      });
+    });
+  }
+
+  // Function to find address from a position
+  function findAddressOfPosition(lat, lng) {
+
+  }
+
+
+  // Search Test : Search Address & Position
+  document.getElementById('form_search')
+    .addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      let query = e.target[0].value,
+          splited = query.split(','),
+          lat, lng;
+
+      // Position search
+      if (splited.length === 2 && (lat = parseFloat(splited[0])) && (lng = parseFloat(splited[1]))) {
+        findAddressOfPosition(lat, lng);
+      }
+
+      // Address Search
+      else {
+        findPositionOfAddress(query);
+      }
+    })
+
+
+
+
+
+  // Function to show a location marker
+  function showLocationMarker(m) {
+    map.removeLastLayers();
+    map.setView({ lat: m.latitude, lng: m.longitude, zoom: 12 });
+    map.addApproximatedMarker({ lat: m.latitude, lng: m.longitude, accuracy: m.accuracy });
   }
 
 
@@ -96,7 +148,7 @@ window.addEventListener('load', () => {
         __WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].getCurrentLocation(
           // User Position find
           (position) => {
-            showLocationMarker(position);
+            showLocationMarker(position.coords);
           },
           // User Position error
           (err) => {
@@ -119,7 +171,7 @@ window.addEventListener('load', () => {
         watchBtn.innerText = 'Stop Watching';
         __WEBPACK_IMPORTED_MODULE_1__geolocater_js__["a" /* default */].watchLocation(
           (position) => {
-            showLocationMarker(position)
+            showLocationMarker(position.coords)
           },
           (err) => {
             console.error(err.message);
@@ -245,27 +297,29 @@ class Mapper {
 
   /**
    *  Add a new marker with accuracy
-   *  @param {Object} marker - Marker definition: lat, lng, accuracy
+   *  @param {Object} m - Marker definition: lat, lng, accuracy
    */
-  addApproximatedMarker(marker) {
+  addApproximatedMarker(m) {
+    console.log(m)
     this.addLayersOnMap([
         __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
-          .circle([ marker.lat, marker.lng ], { radius: marker.accuracy })
+          .circle([ m.lat, m.lng ], { radius: m.accuracy })
           .addTo(this._map),
         __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
-          .marker([ marker.lat, marker.lng ])
+          .marker([ m.lat, m.lng ])
           .addTo(this._map)                
       ]);
   }
 
   /**
    *  Add a simple marker to the map
-   *  @param {Object} marker - Marker definition: lat, lng
+   *  @param {Object} m - Marker definition: lat, lng
    */
-  addMarker(marker) {
+  addMarker(m) {
+    console.log(m)
     this.addLayersOnMap([
         __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
-          .marker([ marker.lat, marker.lng ])
+          .marker([ m.lat, m.lng ])
           .addTo(this._map)                
       ]);
   }
@@ -14175,6 +14229,39 @@ class Geolocater {
 
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Geolocater;
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+
+/** ConstClass to simplify the geocoding process */
+class Geocoder {
+
+  /**
+   *  TODO Find the position from address
+   *  @param {string} addr - Address to translate 
+   */
+  static getPosition(addr, fnSuccess) {
+    $.getJSON('https://nominatim.openstreetmap.org/search?format=json&q=' + addr, (data) => {
+      if (fnSuccess) {
+        fnSuccess(data);
+      }
+    })
+  }
+
+
+  /**
+   *  TODO Find address from a specific position
+   */
+  static getAddress(lat, lng) {
+
+  }
+
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Geocoder;
 
 
 /***/ })

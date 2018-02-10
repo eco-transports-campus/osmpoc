@@ -96,27 +96,29 @@ export class Mapper {
 
   /**
    *  Add a new marker with accuracy
-   *  @param {Object} marker - Marker definition: lat, lng, accuracy
+   *  @param {Object} m - Marker definition: lat, lng, accuracy
    */
-  addApproximatedMarker(marker) {
+  addApproximatedMarker(m) {
+    console.log(m)
     this.addLayersOnMap([
         Leaflet
-          .circle([ marker.lat, marker.lng ], { radius: marker.accuracy })
+          .circle([ m.lat, m.lng ], { radius: m.accuracy })
           .addTo(this._map),
         Leaflet
-          .marker([ marker.lat, marker.lng ])
+          .marker([ m.lat, m.lng ])
           .addTo(this._map)                
       ]);
   }
 
   /**
    *  Add a simple marker to the map
-   *  @param {Object} marker - Marker definition: lat, lng
+   *  @param {Object} m - Marker definition: lat, lng
    */
-  addMarker(marker) {
+  addMarker(m) {
+    console.log(m)
     this.addLayersOnMap([
         Leaflet
-          .marker([ marker.lat, marker.lng ])
+          .marker([ m.lat, m.lng ])
           .addTo(this._map)                
       ]);
   }
