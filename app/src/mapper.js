@@ -99,15 +99,20 @@ export class Mapper {
    *  @param {Object} m - Marker definition: lat, lng, accuracy
    */
   addApproximatedMarker(m) {
-    console.log(m)
+    let marker = Leaflet
+      .marker([ m.lat, m.lng ])
+      .addTo(this._map);
+
     this.addLayersOnMap([
         Leaflet
           .circle([ m.lat, m.lng ], { radius: m.accuracy })
           .addTo(this._map),
-        Leaflet
-          .marker([ m.lat, m.lng ])
-          .addTo(this._map)                
+        marker
       ]);
+
+    if (m.legend) {
+      marker.bindPopup(m.legend);
+    }
   }
 
   /**
@@ -115,12 +120,15 @@ export class Mapper {
    *  @param {Object} m - Marker definition: lat, lng
    */
   addMarker(m) {
-    console.log(m)
-    this.addLayersOnMap([
-        Leaflet
-          .marker([ m.lat, m.lng ])
-          .addTo(this._map)                
-      ]);
+    let marker = Leaflet
+      .marker([ m.lat, m.lng ])
+      .addTo(this._map);
+
+    this.addLayersOnMap([marker]);
+
+    if (m.legend) {
+      marker.bindPopup(m.legend);
+    }
   }
 
 }

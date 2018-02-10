@@ -21,11 +21,13 @@ window.addEventListener('load', () => {
   // Function to find the position of an address
   function findPositionOfAddress(addr) {
     Geocoder.getPosition(addr, (data) => {
+      
       console.log(data);
+
       map.removeLastLayers();
       data.reverse().forEach((location) => {
         map.setView({ lat: location.lat, lng: location.lon, zoom: 12 });
-        map.addMarker({ lat: location.lat, lng: location.lon});
+        map.addMarker({ lat: location.lat, lng: location.lon, legend: location.display_name });
       });
     });
   }

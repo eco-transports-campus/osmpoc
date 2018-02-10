@@ -95,11 +95,13 @@ window.addEventListener('load', () => {
   // Function to find the position of an address
   function findPositionOfAddress(addr) {
     __WEBPACK_IMPORTED_MODULE_2__geocoder_js__["a" /* default */].getPosition(addr, (data) => {
+      
       console.log(data);
+
       map.removeLastLayers();
       data.reverse().forEach((location) => {
         map.setView({ lat: location.lat, lng: location.lon, zoom: 12 });
-        map.addMarker({ lat: location.lat, lng: location.lon});
+        map.addMarker({ lat: location.lat, lng: location.lon, legend: location.display_name });
       });
     });
   }
@@ -300,15 +302,20 @@ class Mapper {
    *  @param {Object} m - Marker definition: lat, lng, accuracy
    */
   addApproximatedMarker(m) {
-    console.log(m)
+    let marker = __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
+      .marker([ m.lat, m.lng ])
+      .addTo(this._map);
+
     this.addLayersOnMap([
         __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
           .circle([ m.lat, m.lng ], { radius: m.accuracy })
           .addTo(this._map),
-        __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
-          .marker([ m.lat, m.lng ])
-          .addTo(this._map)                
+        marker
       ]);
+
+    if (m.legend) {
+      marker.bindPopup(m.legend);
+    }
   }
 
   /**
@@ -316,12 +323,15 @@ class Mapper {
    *  @param {Object} m - Marker definition: lat, lng
    */
   addMarker(m) {
-    console.log(m)
-    this.addLayersOnMap([
-        __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
-          .marker([ m.lat, m.lng ])
-          .addTo(this._map)                
-      ]);
+    let marker = __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a
+      .marker([ m.lat, m.lng ])
+      .addTo(this._map);
+
+    this.addLayersOnMap([marker]);
+
+    if (m.legend) {
+      marker.bindPopup(m.legend);
+    }
   }
 
 }
