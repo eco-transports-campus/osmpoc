@@ -3,8 +3,9 @@
 export default class Geocoder {
 
   /**
-   *  TODO Find the position from address
+   *  Find the position from address
    *  @param {string} addr - Address to translate 
+   *  @param {Function} fnSuccess - Success callback
    */
   static getPosition(addr, fnSuccess) {
     $.getJSON('https://nominatim.openstreetmap.org/search?format=json&q=' + addr, (data) => {
@@ -16,7 +17,10 @@ export default class Geocoder {
 
 
   /**
-   *  TODO Find address from a specific position
+   *  Find address from a specific position
+   *  @param {float} lat - Latitude 
+   *  @param {float} lng - Longitude
+   *  @param {Function} fnSuccess - Success callback
    */
   static getAddress(lat, lng, fnSuccess) {
     $.getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, (data) => {
