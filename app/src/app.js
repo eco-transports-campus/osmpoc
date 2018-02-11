@@ -34,7 +34,13 @@ window.addEventListener('load', () => {
 
   // Function to find address from a position
   function findAddressOfPosition(lat, lng) {
+    Geocoder.getAddress(lat, lng, (data) => {
+      console.log(data);
 
+      map.removeLastLayers();
+      map.setView({ lat: data.lat, lng: data.lon, zoom: 12 });
+      map.addMarker({ lat: data.lat, lng: data.lon, legend: data.display_name });
+    });
   }
 
 

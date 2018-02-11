@@ -108,7 +108,13 @@ window.addEventListener('load', () => {
 
   // Function to find address from a position
   function findAddressOfPosition(lat, lng) {
+    __WEBPACK_IMPORTED_MODULE_2__geocoder_js__["a" /* default */].getAddress(lat, lng, (data) => {
+      console.log(data);
 
+      map.removeLastLayers();
+      map.setView({ lat: data.lat, lng: data.lon, zoom: 12 });
+      map.addMarker({ lat: data.lat, lng: data.lon, legend: data.display_name });
+    });
   }
 
 
@@ -14266,8 +14272,12 @@ class Geocoder {
   /**
    *  TODO Find address from a specific position
    */
-  static getAddress(lat, lng) {
-
+  static getAddress(lat, lng, fnSuccess) {
+    $.getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, (data) => {
+      if (fnSuccess) {
+        fnSuccess(data);
+      }
+    })
   }
 
 }

@@ -18,8 +18,12 @@ export default class Geocoder {
   /**
    *  TODO Find address from a specific position
    */
-  static getAddress(lat, lng) {
-
+  static getAddress(lat, lng, fnSuccess) {
+    $.getJSON(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`, (data) => {
+      if (fnSuccess) {
+        fnSuccess(data);
+      }
+    })
   }
 
 }
