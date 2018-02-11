@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 
 /** ConstClass to simplify the geocoding process */
 export default class Geocoder {
