@@ -115,6 +115,13 @@ window.addEventListener('load', () => {
     });
   }
 
+  function addRouteOnMap(list) {
+    map.addRoute(list, function(route) {
+      console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
+      console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+    });
+  }
+
   // Function to find the position of an address
   function findRoute(addr_list) {
     let location_list = [];
@@ -128,7 +135,7 @@ window.addEventListener('load', () => {
               lat: parseFloat(data[0].lat),
               lng: parseFloat(data[0].lon)
             });
-            map.addRoute(location_list);
+            addRouteOnMap(location_list);
           }
         });
       } else if (query.type === 'location') {
@@ -136,7 +143,7 @@ window.addEventListener('load', () => {
           lat: parseFloat(query.lat),
           lng: parseFloat(query.lng)
         });
-        map.addRoute(location_list);
+        addRouteOnMap(location_list);
       }
     });
 
@@ -274,7 +281,11 @@ const MapConst = {
   TILES: {
       ORIGIN: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       DEFAULT: 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
-    }
+    },
+
+  EMISSIONS: {
+    INDIVIDUAL_CAR: 206
+  }
 
 };
 /* unused harmony export MapConst */
@@ -401,17 +412,31 @@ class Mapper {
     }
   }
 
-  addRoute(points) {
+  addRoute(points, fn) {
     let waypoints = [];
 
-    points.forEach(function (addr){
+    points.forEach(function(addr) {
       waypoints.push(__WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.latLng(parseFloat(addr.lat), parseFloat(addr.lng)));
     });
 
     this.addLayersOnMap([
-      __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.Routing.control({
-        waypoints: waypoints
-      }).addTo(this._map)
+      __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.Routing
+        .control({
+          waypoints: waypoints
+        })
+        .on('routesfound', function(e) {
+          if (fn && e.routes && e.routes.length > 0) {
+            let route = e.routes[0];
+
+            route.carbonEmission = (route.summary.totalDistance / 1000) * MapConst.EMISSIONS.INDIVIDUAL_CAR;
+
+            fn(route);
+          }
+          else if (fn) {
+            fn(false);
+          }
+        })
+        .addTo(this._map)
     ]);
   }
 

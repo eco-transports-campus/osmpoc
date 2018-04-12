@@ -41,6 +41,13 @@ window.addEventListener('load', () => {
     });
   }
 
+  function addRouteOnMap(list) {
+    map.addRoute(list, function(route) {
+      console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
+      console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+    });
+  }
+
   // Function to find the position of an address
   function findRoute(addr_list) {
     let location_list = [];
@@ -54,7 +61,7 @@ window.addEventListener('load', () => {
               lat: parseFloat(data[0].lat),
               lng: parseFloat(data[0].lon)
             });
-            map.addRoute(location_list);
+            addRouteOnMap(location_list);
           }
         });
       } else if (query.type === 'location') {
@@ -62,7 +69,7 @@ window.addEventListener('load', () => {
           lat: parseFloat(query.lat),
           lng: parseFloat(query.lng)
         });
-        map.addRoute(location_list);
+        addRouteOnMap(location_list);
       }
     });
 
