@@ -146,10 +146,11 @@ export class Mapper {
     this.addLayersOnMap([
       Leaflet.Routing
         .control({
-          waypoints: waypoints
+          waypoints: waypoints,
+          defaultErrorHandler: false
         })
-        .on('routesfound', function(e) {
-          if (fn && e.routes && e.routes.length > 0) {
+        .on('routesfound routingerror', function(e) {
+          if (fn && e.type === 'routesfound' && e.routes && e.routes.length > 0) {
             let route = e.routes[0];
 
             route.carbonEmission = (route.summary.totalDistance / 1000) * MapConst.EMISSIONS.INDIVIDUAL_CAR;

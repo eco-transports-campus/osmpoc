@@ -117,8 +117,12 @@ window.addEventListener('load', () => {
 
   function addRouteOnMap(list) {
     map.addRoute(list, function(route) {
-      console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
-      console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+      if (route) {
+        console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
+        console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+      } else {
+        console.error('No route found');
+      }
     });
   }
 
@@ -422,10 +426,11 @@ class Mapper {
     this.addLayersOnMap([
       __WEBPACK_IMPORTED_MODULE_0_leaflet___default.a.Routing
         .control({
-          waypoints: waypoints
+          waypoints: waypoints,
+          defaultErrorHandler: false
         })
-        .on('routesfound', function(e) {
-          if (fn && e.routes && e.routes.length > 0) {
+        .on('routesfound routingerror', function(e) {
+          if (fn && e.type === 'routesfound' && e.routes && e.routes.length > 0) {
             let route = e.routes[0];
 
             route.carbonEmission = (route.summary.totalDistance / 1000) * MapConst.EMISSIONS.INDIVIDUAL_CAR;

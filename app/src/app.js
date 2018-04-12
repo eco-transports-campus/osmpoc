@@ -43,8 +43,12 @@ window.addEventListener('load', () => {
 
   function addRouteOnMap(list) {
     map.addRoute(list, function(route) {
-      console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
-      console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+      if (route) {
+        console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
+        console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+      } else {
+        console.error('No route found');
+      }
     });
   }
 
