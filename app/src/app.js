@@ -76,7 +76,6 @@ window.addEventListener('load', () => {
         addRouteOnMap(location_list);
       }
     });
-
   }
 
 
