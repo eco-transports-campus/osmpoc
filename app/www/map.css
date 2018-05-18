@@ -5,6 +5,10 @@
 	position: relative;
 }
 
+.leaflet-control-container {
+	display: none;
+}
+
 
 /* Leaflet Stylesheet */
 /* required styles */

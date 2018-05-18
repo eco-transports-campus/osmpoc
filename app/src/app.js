@@ -9,19 +9,16 @@ window.addEventListener('load', () => {
   // Initialize Map
   let map = new Mapper('map');
 
-
-
   function showMarker(m) {
     console.log(m)
     map.removeLastLayers();
     map.setView({ lat: m.latitude, lng: m.longitude, zoom: 12 });
-    map.addMarker({ lat: m.latitude, lng: m.longitude});
+    map.addMarker({ lat: m.latitude, lng: m.longitude });
   }
 
   // Function to find the position of an address
   function findPositionOfAddress(addr) {
     Geocoder.getPosition(addr, (data) => {
-      
       console.log(data);
 
       map.removeLastLayers();
@@ -43,24 +40,94 @@ window.addEventListener('load', () => {
     });
   }
 
+  function addRouteOnMap(list) {
+    map.addRoute(list, function(route) {
+      if (route) {
+        console.log(`Distance: ${(route.summary.totalDistance/1000)} km`);
+        console.log(`Carbon emission: ${route.carbonEmission} gCO2`);
+      } else {
+        console.error('No route found');
+      }
+    });
+  }
+
+  // Function to find the position of an address
+  function findRoute(addr_list) {
+    let location_list = [];
+
+    map.removeLastLayers();
+    addr_list.forEach((query) => {
+      if (query.type === 'address') {
+        Geocoder.getPosition(query.query, (data) => {
+          if (data.length > 0) {
+            location_list.push({
+              lat: parseFloat(data[0].lat),
+              lng: parseFloat(data[0].lon)
+            });
+            addRouteOnMap(location_list);
+          }
+        });
+      } else if (query.type === 'location') {
+        location_list.push({
+          lat: parseFloat(query.lat),
+          lng: parseFloat(query.lng)
+        });
+        addRouteOnMap(location_list);
+      }
+    });
+  }
+
+
 
   // Search Test : Search Address & Position
   document.getElementById('form_search')
     .addEventListener('submit', (e) => {
       e.preventDefault();
 
-      let query = e.target[0].value,
-          splited = query.split(','),
-          lat, lng;
+      let queries = [];
 
-      // Position search
-      if (splited.length === 2 && (lat = parseFloat(splited[0])) && (lng = parseFloat(splited[1]))) {
-        findAddressOfPosition(lat, lng);
+      for (let i = 0; i < e.target.length; i++) {
+        let query = e.target[i].value;
+
+        if (query !== 'search') {
+          let splited = query.split(','),
+            lat, lng;
+
+          // Position search
+          if (splited.length === 2 && (lat = parseFloat(splited[0])) && (lng = parseFloat(splited[1]))) {
+            queries.push({
+              type: 'location',
+              lat: lat,
+              lng: lng
+            });
+          }
+
+          // Address Search
+          else {
+            queries.push({
+              type: 'address',
+              query: query
+            });
+          }
+        }
       }
 
-      // Address Search
+      // Un champ de recherche
+      if (queries.length === 1) {
+        // Position search
+        if (queries[0].type === 'location') {
+          findAddressOfPosition(queries[0].lat, queries[0].lng);
+        }
+
+        // Address Search
+        else if (queries[0].type === 'address') {
+          findPositionOfAddress(queries[0].query);
+        }
+      }
+
+      // Plusieurs champs de recherches
       else {
-        findPositionOfAddress(query);
+        findRoute(queries);
       }
     })
 
@@ -79,16 +146,16 @@ window.addEventListener('load', () => {
   // Button Test : Current Location
   document.getElementById('btn_CurrentLocation')
     .addEventListener('click', () => {
-        Geolocater.getCurrentLocation(
-          // User Position find
-          (position) => {
-            showLocationMarker(position.coords);
-          },
-          // User Position error
-          (err) => {
-            console.error(err.message);
-          });
-      });
+      Geolocater.getCurrentLocation(
+        // User Position find
+        (position) => {
+          showLocationMarker(position.coords);
+        },
+        // User Position error
+        (err) => {
+          console.error(err.message);
+        });
+    });
 
 
   // Button Test : Watch Location
@@ -118,7 +185,7 @@ window.addEventListener('load', () => {
   document
     .getElementById('btn_ClearLayers')
     .addEventListener('click', () => {
-      while (map.removeLastLayers()) {}
+      while (map.removeLastLayers()) { }
     });
 
 });

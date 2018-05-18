@@ -1,4 +1,5 @@
 import Leaflet from "leaflet";
+import Routing from "leaflet-routing-machine";
 
 
 export const MapConst = {
@@ -6,7 +7,11 @@ export const MapConst = {
   TILES: {
       ORIGIN: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       DEFAULT: 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
-    }
+    },
+
+  EMISSIONS: {
+    INDIVIDUAL_CAR: 206
+  }
 
 };
 
@@ -129,6 +134,35 @@ export class Mapper {
     if (m.legend) {
       marker.bindPopup(m.legend);
     }
+  }
+
+  addRoute(points, fn) {
+    let waypoints = [];
+
+    points.forEach(function(addr) {
+      waypoints.push(Leaflet.latLng(parseFloat(addr.lat), parseFloat(addr.lng)));
+    });
+
+    this.addLayersOnMap([
+      Leaflet.Routing
+        .control({
+          waypoints: waypoints,
+          defaultErrorHandler: false
+        })
+        .on('routesfound routingerror', function(e) {
+          if (fn && e.type === 'routesfound' && e.routes && e.routes.length > 0) {
+            let route = e.routes[0];
+
+            route.carbonEmission = (route.summary.totalDistance / 1000) * MapConst.EMISSIONS.INDIVIDUAL_CAR;
+
+            fn(route);
+          }
+          else if (fn) {
+            fn(false);
+          }
+        })
+        .addTo(this._map)
+    ]);
   }
 
 }
